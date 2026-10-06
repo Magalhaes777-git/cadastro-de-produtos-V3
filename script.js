@@ -1,46 +1,14 @@
+
 class Produto {
-   
-    #nome;
-    #preco;
-    #quantidade;
-
     constructor(nome, preco, quantidade) {
-        const precoNum = parseFloat(preco);
-        const quantidadeNum = parseInt(quantidade);
-
-      
-        if (!nome || nome.trim() === "") {
-            throw new Error("O nome do produto não pode ficar em branco!");
-        }
-
-        if (isNaN(precoNum) || precoNum <= 0) {
-            throw new Error("O preço deve ser um número maior que zero!");
-        }
-
-        if (isNaN(quantidadeNum) || quantidadeNum <= 0) {
-            throw new Error("A quantidade deve ser um número maior que zero!");
-        }
-
-        this.#nome = nome;
-        this.#preco = precoNum;
-        this.#quantidade = quantidadeNum;
+        this.nome = nome;
+        this.preco = parseFloat(preco);
+        this.quantidade = parseInt(quantidade);
     }
 
-   
-    get nome() {
-        return this.#nome;
-    }
-
-    get preco() {
-        return this.#preco;
-    }
-
-    get quantidade() {
-        return this.#quantidade;
-    }
-
+  
     calcularSubtotal() {
-        return this.#preco * this.#quantidade;
+        return this.preco * this.quantidade;
     }
 }
 
@@ -48,55 +16,88 @@ class Produto {
 const listaDeProdutos = [];
 
 
+const CHAVE_STORAGE = "sistema_estoque_produtos";
+
+
+function salvarNoLocalStorage() {
+  
+    const listaEmTexto = JSON.stringify(listaDeProdutos);
+    localStorage.setItem(CHAVE_STORAGE, listaEmTexto);
+}
+
+
+function carregarDoLocalStorage() {
+    const dadosSalvos = localStorage.getItem(CHAVE_STORAGE);
+
+    
+    if (dadosSalvos) {
+       
+        const produtosObjetos = JSON.parse(dadosSalvos);
+
+        produtosObjetos.forEach((prod) => {
+            const produtoInstanciado = new Produto(prod.nome, prod.preco, prod.quantidade);
+            listaDeProdutos.push(produtoInstanciado);
+        });
+    }
+}
+
+
 const formProduto = document.getElementById("produto-form");
-const btnLimparTabela = document.getElementById("limpar-tabela");
+const btnLimparTudo = document.getElementById("limpar-tabela");
+const totalEstoqueEl = document.getElementById("total-estoque");
 
 
 formProduto.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    try {
-        const nomeInput = document.getElementById("nome").value;
-        const precoInput = document.getElementById("preco").value;
-        const quantidadeInput = document.getElementById("quantidade").value;
+    const nomeInput = document.getElementById("nome").value;
+    const precoInput = document.getElementById("preco").value;
+    const quantidadeInput = document.getElementById("quantidade").value;
 
-        const novoProduto = new Produto(nomeInput, precoInput, quantidadeInput);
+    const novoProduto = new Produto(nomeInput, precoInput, quantidadeInput);
 
-        listaDeProdutos.push(novoProduto);
+    listaDeProdutos.push(novoProduto);
 
-        renderizarTabela();
-        formProduto.reset();
-    } catch (error) {
-        alert(error.message);
+    salvarNoLocalStorage();
+
+    atualizarInterface();
+    formProduto.reset();
+});
+
+
+btnLimparTudo.addEventListener("click", function () {
+    if (listaDeProdutos.length === 0) {
+        alert("A tabela já está vazia!");
+        return;
+    }
+
+    if (confirm("Tem certeza que deseja remover todos os produtos?")) {
+        listaDeProdutos.length = 0;
+
+       
+        localStorage.removeItem(CHAVE_STORAGE);
+
+        atualizarInterface();
     }
 });
 
 
-if (btnLimparTabela) {
-    btnLimparTabela.addEventListener("click", function () {
-        if (listaDeProdutos.length === 0) return;
-
-        listaDeProdutos.length = 0; 
-        renderizarTabela();
-    });
-}
-
 
 function removerProduto(index) {
     listaDeProdutos.splice(index, 1);
-    renderizarTabela();
+
+    salvarNoLocalStorage();
+
+    atualizarInterface();
 }
 
 
 function atualizarTotalEstoque() {
-    const elementoTotal = document.getElementById("total-estoque");
-
-    if (!elementoTotal) return;
-
-    const valorTotal = listaDeProdutos.reduce((acumulador, produto) => {
-        return acumulador + produto.calcularSubtotal();
+    const total = listaDeProdutos.reduce((acc, produto) => {
+        return acc + produto.calcularSubtotal();
     }, 0);
 
+    totalEstoqueEl.textContent = `Total em Estoque: R$ ${total.toFixed(2)}`;
 }
 
 
@@ -114,13 +115,23 @@ function renderizarTabela() {
             <td>${produto.quantidade}</td>
             <td>R$ ${produto.calcularSubtotal().toFixed(2)}</td>
             <td>
-                <button class="btn-remover" onclick="removerProduto(${index})">Remover</button>
+                <button class="btn-remover">Remover</button>
             </td>
         `;
 
+        const btnRemover = linha.querySelector(".btn-remover");
+        btnRemover.addEventListener("click", () => removerProduto(index));
+
         tabelaBody.appendChild(linha);
     });
+}
 
-  
+
+function atualizarInterface() {
+    renderizarTabela();
     atualizarTotalEstoque();
 }
+
+
+carregarDoLocalStorage();
+atualizarInterface();
