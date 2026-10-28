@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-    max-width: 650px;
+    max-width: 1000px;
     background-color: #fff;
     margin: 30px auto;
     padding: 25px;
@@ -31,7 +31,6 @@ form {
     flex-direction: column;
     gap: 15px;
     margin-bottom: 25px;
-
 }
 
 .form-group {
@@ -43,7 +42,6 @@ form {
 label {
     font-weight: bold;
     font-size: 14px;
-
 }
 
 input {
@@ -90,6 +88,8 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
     margin-bottom: 15px;
     padding-top: 10px;
     border-top: 2px solid whitesmoke;
@@ -108,7 +108,7 @@ table {
 
 th,
 td {
-    border: px solid gray;
+    border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
 }
@@ -119,17 +119,56 @@ th {
 }
 
 tbody tr:nth-child(even) {
-    background-color: gray;
+    background-color: #f1f5f9;
 }
 
+tbody tr:hover {
+    background-color: #e2e8f0;
+}
+
+/* Botão Editar */
+.btn-editar {
+    background-color: #16a34a;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 12px;
+    margin: 3px;
+}
+
+.btn-editar:hover {
+    background-color: #15803d;
+}
+
+/* Botão Remover */
 .btn-remover {
     background-color: red;
     color: #fff;
     padding: 5px 10px;
     font-size: 12px;
+    margin: 3px;
 }
 
 .btn-remover:hover {
     background-color: rgb(158, 11, 11);
+}
 
+/* Adaptação para celulares */
+@media (max-width: 650px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        margin: 15px auto;
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    .resumo-container {
+        align-items: flex-start;
+    }
+
+    table {
+        min-width: 600px;
+    }
 }
